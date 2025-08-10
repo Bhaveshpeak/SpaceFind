@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NASA APOD Viewer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>NASA Astronomy Picture of the Day</h1>
+    </header>
+
+    <section class="date-selector">
+        <label for="apod-date">Choose a date:</label>
+        <input type="date" id="apod-date">
+        <button id="fetch-btn">Get APOD</button>
+    </section>
+
+    <main>
+        <div class="apod-container">
+            <h2 id="title"></h2>
+            <p id="date"></p>
+            <img id="image" alt="Astronomy Picture of the Day">
+            <iframe id="video" frameborder="0" allowfullscreen></iframe>
+            <p id="explanation"></p>
+        </div>
+    </main>
+
+    <footer>
+        <p>Powered by NASA APOD API</p>
+    </footer>
+
+    <script>
+        const apiKey = "1vOnQAvrxBHb8eyS7yRNtDPTVTmwhrDJud9pebXZ"; // Your personal API key
+        const fetchBtn = document.getElementById("fetch-btn");
+        const dateInput = document.getElementById("apod-date");
+
+        // Set date limits (APOD available from 1995-06-16 to today)
+        const today = new Date().toISOString().split("T")[0];
+        dateInput.max = today;
+        dateInput.min = "1995-06-16";
+
+        function getAPOD(date) {
+            let url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
+            if (date) {
+                url += `&date=${date}`;
+            }
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 400 || data.error) {
+                        document.getElementById("title").textContent = "APOD not found for this date.";
+                        document.getElementById("image").style.display = "none";
+                        document.getElementById("video").style.display = "none";
+                        document.getElementById("date").textContent = "";
+                        document.getElementById("explanation").textContent = "";
+                        return;
+                    }
+
+                    document.getElementById("title").textContent = data.title;
+                    document.getElementById("date").textContent = data.date;
+                    document.getElementById("explanation").textContent = data.explanation;
+
+                    if (data.media_type === "image") {
+                        document.getElementById("image").src = data.url;
+                        document.getElementById("image").style.display = "block";
+                        document.getElementById("video").style.display = "none";
+                    } else if (data.media_type === "video") {
+                        document.getElementById("video").src = data.url;
+                        document.getElementById("video").style.display = "block";
+                        document.getElementById("image").style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching NASA APOD:", error);
+                    alert("There was an error fetching the APOD. Please try again.");
+                });
+        }
+
+        // Load today's APOD on page load
+        getAPOD();
+
+        fetchBtn.addEventListener("click", () => {
+            const selectedDate = dateInput.value;
+            if (selectedDate) {
+                getAPOD(selectedDate);
+            } else {
+                alert("Please select a date first!");
+            }
+        });
+    </script>
+</body>
+</html>

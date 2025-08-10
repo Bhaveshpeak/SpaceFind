@@ -1,0 +1,91 @@
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background-color: #0b0d17;
+    color: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #1a1a2e;
+    padding: 20px;
+    text-align: center;
+    font-size: 1.4em;
+}
+
+.date-selector {
+    text-align: center;
+    margin: 20px;
+}
+
+.date-selector label {
+    font-size: 1.1em;
+    margin-right: 10px;
+}
+
+.date-selector input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.date-selector input[type="date"]:focus {
+    border-color: #e94560;
+}
+
+.date-selector button {
+    padding: 8px 15px;
+    font-size: 1em;
+    margin-left: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #e94560;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.date-selector button:hover {
+    background: #d63447;
+}
+
+
+.apod-container {
+    max-width: 900px;
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+}
+
+img, iframe {
+    max-width: 100%;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+footer {
+    background-color: #1a1a2e;
+    padding: 10px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #bbb;
+}
+
+/* Loader Animation */
+.loader {
+    border: 4px solid rgba(255,255,255,0.2);
+    border-top: 4px solid #e94560;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 20px auto;
+    display: none;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}

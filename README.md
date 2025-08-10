@@ -1,2 +1,5 @@
 # SpaceFind
-Enter your date to find the image taken by Nasa on that date. Uses Nasa api.
+Enter a Date to find the Pictures taken in Space on that Date.
+You can enter the exact Day month and year.
+
+Powered By Nasa Apod Api

@@ -32,11 +32,10 @@
     </footer>
 
     <script>
-        const apiKey = "1vOnQAvrxBHb8eyS7yRNtDPTVTmwhrDJud9pebXZ"; // Your personal API key
+        const apiKey = "1vOnQAvrxBHb8eyS7yRNtDPTVTmwhrDJud9pebXZ"; 
         const fetchBtn = document.getElementById("fetch-btn");
         const dateInput = document.getElementById("apod-date");
 
-        // Set date limits (APOD available from 1995-06-16 to today)
         const today = new Date().toISOString().split("T")[0];
         dateInput.max = today;
         dateInput.min = "1995-06-16";
@@ -79,7 +78,6 @@
                 });
         }
 
-        // Load today's APOD on page load
         getAPOD();
 
         fetchBtn.addEventListener("click", () => {
@@ -93,3 +91,4 @@
     </script>
 </body>
 </html>
+

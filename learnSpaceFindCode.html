@@ -1,0 +1,72 @@
+<!DOCTYPE html> <!-- Declares HTML5 document type -->
+<html lang="en"> <!-- Main HTML tag, language is English -->
+<head>
+    <meta charset="UTF-8"> <!-- Sets character encoding so all symbols work -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Makes site responsive on mobile -->
+    <title>NASA APOD Viewer</title> <!-- Tab title -->
+
+    <!-- Link to CSS file (rel means "this file is a stylesheet") -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main content of the page -->
+    <main>
+        <h1>NASA Astronomy Picture of the Day</h1>
+
+        <!-- Date input for user to choose date -->
+        <input type="date" id="dateInput">
+        
+        <!-- Button to fetch NASA data -->
+        <button id="fetchBtn">Get Image</button>
+
+        <!-- Section to display the APOD data -->
+        <section class="apod-section">
+            <!-- Title from NASA API -->
+            <h2 id="title"></h2>
+
+            <!-- Image from NASA API -->
+            <img id="apod-image" alt="Astronomy Picture of the Day">
+
+            <!-- Explanation text from NASA API -->
+            <p id="explanation"></p>
+        </section>
+    </main>
+
+    <!-- JavaScript section (runs after HTML loads) -->
+    <script>
+        // When button is clicked, run the function
+        document.getElementById("fetchBtn").addEventListener("click", () => {
+            // Get selected date from input box
+            const date = document.getElementById("dateInput").value;
+            
+            // Your personal NASA API key
+            const apiKey = "1vOnQAvrxBHb8eyS7yRNtDPTVTmwhrDJud9pebXZ";
+
+            // Construct the API request URL with date and key
+            const url = `https://api.nasa.gov/planetary/apod?date=${date}&api_key=${apiKey}`;
+
+            // Fetch data from NASA API
+            fetch(url)
+                .then(response => response.json()) // Convert raw response to JSON
+                .then(data => {
+                    // Check if the API returned an image
+                    if (data.media_type === "image") {
+                        // Set title text
+                        document.getElementById("title").textContent = data.title;
+                        // Set image source
+                        document.getElementById("apod-image").src = data.url;
+                        // Set explanation text
+                        document.getElementById("explanation").textContent = data.explanation;
+                    } else {
+                        // If it's a video or other type, show alert
+                        alert("No image available for this date!");
+                    }
+                })
+                .catch(error => {
+                    // If there's a problem, log it
+                    console.error("Error:", error);
+                });
+        });
+    </script>
+</body>
+</html>

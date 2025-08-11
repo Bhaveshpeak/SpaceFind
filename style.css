@@ -74,7 +74,6 @@ footer {
     color: #bbb;
 }
 
-/* Loader Animation */
 .loader {
     border: 4px solid rgba(255,255,255,0.2);
     border-top: 4px solid #e94560;
@@ -89,3 +88,4 @@ footer {
 @keyframes spin {
     100% { transform: rotate(360deg); }
 }
+

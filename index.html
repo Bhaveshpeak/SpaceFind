@@ -1,98 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NASA APOD Viewer</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NASA APOD Viewer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>SpaceFind</h1>
-    </header>
+  <header>NASA Astronomy Picture of the Day</header>
 
-    <section class="date-selector">
-        <label for="apod-date">Choose a date:</label>
-        <input type="date" id="apod-date">
-        <button id="fetch-btn">Get APOD</button>
-    </section>
+  <div class="date-selector">
+    <label for="dateInput">Select a date:</label>
+    <input type="date" id="dateInput">
+    <button onclick="getAPOD()">Show</button>
+  </div>
 
-    <main>
-        <div class="apod-container">
-            <h1>Nasa Astronomy Picture of the Day</h1>
-            <h2 id="title"></h2>
-            <p id="date"></p>
-            <img id="image" alt="Astronomy Picture of the Day">
-            <iframe id="video" frameborder="0" allowfullscreen></iframe>
-            <p id="explanation"></p>
-        </div>
-    </main>
+  <div class="apod-container">
+    <h2 id="title"></h2>
+    <p id="explanation"></p>
+    <div id="media"></div>
+    <div class="loader" id="loader"></div>
+  </div>
 
-    <footer>
-        <p>Powered by NASA APOD API</p>
-    </footer>
+  <footer>Data from NASA APOD API</footer>
 
-    <script>
-        const apiKey = "5JhBPbsX6wC7rpFsO54McHdsFsYrh2r8wWRVatHY"; 
-        const fetchBtn = document.getElementById("fetch-btn");
-        const dateInput = document.getElementById("apod-date");
+  <script>
+    async function getAPOD() {
+      const date = document.getElementById("dateInput").value;
+      const apiKey = "5JhBPbsX6wC7rpFsO54McHdsFsYrh2r8wWRVatHY";
+      const url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}&date=${date}`;
 
-        const today = new Date().toISOString().split("T")[0];
-        dateInput.max = today;
-        dateInput.min = "1995-06-16";
+      const loader = document.getElementById("loader");
+      loader.style.display = "block";
 
-        function getAPOD(date) {
-            let url = `https://api.nasa.gov/planetary/apod?api_key=${apiKey}`;
-            if (date) {
-                url += `&date=${date}`;
-            }
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 400 || data.error) {
-                        document.getElementById("title").textContent = "APOD not found for this date.";
-                        document.getElementById("image").style.display = "none";
-                        document.getElementById("video").style.display = "none";
-                        document.getElementById("date").textContent = "";
-                        document.getElementById("explanation").textContent = "";
-                        return;
-                    }
+        document.getElementById("title").innerText = data.title;
+        document.getElementById("explanation").innerText = data.explanation;
 
-                    document.getElementById("title").textContent = data.title;
-                    document.getElementById("date").textContent = data.date;
-                    document.getElementById("explanation").textContent = data.explanation;
+        const mediaDiv = document.getElementById("media");
+        mediaDiv.innerHTML = "";
 
-                    if (data.media_type === "image") {
-                        document.getElementById("image").src = data.url;
-                        document.getElementById("image").style.display = "block";
-                        document.getElementById("video").style.display = "none";
-                    } else if (data.media_type === "video") {
-                        document.getElementById("video").src = data.url;
-                        document.getElementById("video").style.display = "block";
-                        document.getElementById("image").style.display = "none";
-                    }
-                })
-                .catch(error => {
-                    console.error("Error fetching NASA APOD:", error);
-                    alert("There was an error fetching the APOD. Please try again.");
-                });
+        if (data.media_type === "image") {
+          const img = document.createElement("img");
+          img.src = data.url;
+          mediaDiv.appendChild(img);
+        } else if (data.media_type === "video") {
+          const iframe = document.createElement("iframe");
+          iframe.src = data.url;
+          iframe.width = "800";
+          iframe.height = "500";
+          mediaDiv.appendChild(iframe);
         }
-
-        getAPOD();
-
-        fetchBtn.addEventListener("click", () => {
-            const selectedDate = dateInput.value;
-            if (selectedDate) {
-                getAPOD(selectedDate);
-            } else {
-                alert("Please select a date first!");
-            }
-        });
-    </script>
+      } catch (error) {
+        alert("Error fetching data. Please try again.");
+        console.error(error);
+      } finally {
+        loader.style.display = "none";
+      }
+    }
+  </script>
 </body>
 </html>
-
-
-
-

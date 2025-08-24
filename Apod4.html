@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpaceFind - APOD Gallery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Custom Tailwind CSS configuration for the new theme
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#0a0a1f',
+                        'secondary': '#1e1e3f',
+                        'accent': '#38bdf8', // Sky blue for accents
+                        'card-bg': 'rgba(17, 24, 39, 0.6)' // Semi-transparent dark blue for cards
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Importing new fonts from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&family=Jura:wght@400;700&display=swap');
+        
+        /* Base body styling with new font and dark gradient background */
+        body {
+            font-family: 'Jura', monospace;
+            background: linear-gradient(135deg, #0a0a1f 0%, #1e1e3f 100%);
+            min-height: 100vh;
+        }
+        
+        /* Custom class for the heading font */
+        .heading-font {
+            font-family: 'Exo 2', sans-serif;
+        }
+        
+        /* Starry background effect */
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+        
+        /* Simple fade-in animation for elements */
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Pulse animation for the like button */
+        .like-pulse {
+            animation: likePulse 0.5s ease;
+        }
+        
+        @keyframes likePulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Smooth transition for image hover effect */
+        .apod-image {
+            transition: transform 0.3s ease;
+        }
+        
+        .apod-image:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen">
+    <!-- Star background container -->
+    <div id="stars" class="fixed top-0 left-0 w-full h-full z-0"></div>
+    
+    <div class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Header -->
+        <header class="text-center mb-12 fade-in">
+            <h1 class="heading-font text-4xl md:text-6xl font-bold mb-2">
+                <span class="text-accent">Space</span>Find
+            </h1>
+            <p class="text-lg md:text-xl text-gray-400">Discover the cosmos! Each day a different image of our fascinating universe.</p>
+        </header>
+        
+        <div class="grid md:grid-cols-3 gap-8">
+            <!-- Main content area -->
+            <div class="md:col-span-2">
+                <!-- Date input form -->
+                <div class="bg-card-bg backdrop-blur-sm border border-gray-700 rounded-xl p-6 mb-8 fade-in">
+                    <h2 class="heading-font text-2xl mb-4">Select a Date</h2>
+                    <form id="date-form" class="flex flex-col md:flex-row gap-4">
+                        <input 
+                            type="date" 
+                            id="apod-date" 
+                            class="flex-grow px-4 py-3 rounded-lg bg-gray-900 text-white border border-gray-600 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                            max="" 
+                            required
+                        >
+                        <button 
+                            type="submit" 
+                            class="heading-font px-6 py-3 bg-accent text-primary font-bold hover:bg-sky-400 rounded-lg transition-colors flex items-center justify-center"
+                        >
+                            <i class="fas fa-rocket mr-2"></i> Fetch Image
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- APOD Display Area -->
+                <div id="apod-container" class="bg-card-bg backdrop-blur-sm border border-gray-700 rounded-xl p-6 fade-in hidden">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 id="apod-title" class="heading-font text-2xl"></h2>
+                        <button id="like-btn" class="flex items-center text-gray-400 hover:text-accent transition-colors text-right ml-4">
+                            <i class="far fa-heart text-2xl"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div id="media-container" class="rounded-lg overflow-hidden bg-black"></div>
+                    </div>
+                    
+                    <p id="apod-date-display" class="text-gray-400 mb-4"></p>
+                    <div id="apod-explanation" class="text-gray-300 leading-relaxed"></div>
+                </div>
+                
+                <!-- Loading and Error States -->
+                <div id="loading" class="text-center py-12 hidden">
+                    <div class="inline-flex items-center">
+                        <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span class="heading-font text-xl">Contacting the Cosmos...</span>
+                    </div>
+                </div>
+                
+                <div id="error-message" class="bg-red-500/20 border border-red-500 rounded-xl p-6 text-center hidden">
+                    <i class="fas fa-exclamation-circle text-3xl mb-3 text-red-400"></i>
+                    <h3 class="heading-font text-xl mb-2">Oops! A Cosmic Anomaly Occurred</h3>
+                    <p id="error-text" class="text-gray-300"></p>
+                </div>
+            </div>
+            
+            <!-- Most liked images sidebar -->
+            <div class="md:col-span-1">
+                <div class="bg-card-bg backdrop-blur-sm border border-gray-700 rounded-xl p-6 sticky top-8 fade-in">
+                    <h2 class="heading-font text-2xl mb-4 flex items-center">
+                        <i class="fas fa-fire text-accent mr-2"></i> Top Favorites
+                    </h2>
+                    
+                    <div id="liked-list" class="space-y-4">
+                        <p class="text-gray-400 text-center py-4">Like some images to see them here!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Element References ---
+            const dateInput = document.getElementById('apod-date');
+            const dateForm = document.getElementById('date-form');
+            const loadingIndicator = document.getElementById('loading');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const apodContainer = document.getElementById('apod-container');
+            const apodTitle = document.getElementById('apod-title');
+            const apodDateDisplay = document.getElementById('apod-date-display');
+            const mediaContainer = document.getElementById('media-container');
+            const apodExplanation = document.getElementById('apod-explanation');
+            const likeBtn = document.getElementById('like-btn');
+            const likedList = document.getElementById('liked-list');
+
+            // --- State Management ---
+            let currentApodData = null;
+
+            // --- API & Local Storage ---
+            const API_KEY = '5JhBPbsX6wC7rpFsO54McHdsFsYrh2r8wWRVatHY';
+            
+            const getLikedImages = () => {
+                const liked = localStorage.getItem('spaceFindLikes');
+                return liked ? JSON.parse(liked) : {};
+            };
+
+            const saveLikedImages = (likedImages) => {
+                localStorage.setItem('spaceFindLikes', JSON.stringify(likedImages));
+            };
+
+            // --- UI Update Functions ---
+            const showLoading = (isLoading) => {
+                loadingIndicator.classList.toggle('hidden', !isLoading);
+                if (isLoading) {
+                    apodContainer.classList.add('hidden');
+                    errorMessage.classList.add('hidden');
+                }
+            };
+
+            const showError = (message) => {
+                errorText.textContent = message || 'Failed to fetch data. Please try again later.';
+                errorMessage.classList.remove('hidden');
+            };
+
+            const updateLikedList = () => {
+                const likedImages = getLikedImages();
+                likedList.innerHTML = '';
+                
+                const sortedEntries = Object.entries(likedImages).sort((a, b) => b[1].likes - a[1].likes);
+                
+                if (sortedEntries.length === 0) {
+                    likedList.innerHTML = '<p class="text-gray-400 text-center py-4">Like some images to see them here!</p>';
+                    return;
+                }
+
+                sortedEntries.slice(0, 5).forEach(([date, data]) => {
+                    const listItem = document.createElement('div');
+                    listItem.className = 'bg-gray-900/50 p-3 rounded-lg hover:bg-gray-800 transition-colors cursor-pointer';
+                    listItem.innerHTML = `
+                        <div class="flex items-center">
+                            <img src="${data.thumbnail}" alt="${data.title}" class="w-16 h-16 object-cover rounded-md flex-shrink-0">
+                            <div class="ml-3 overflow-hidden">
+                                <h3 class="heading-font text-sm font-semibold truncate">${data.title}</h3>
+                                <p class="text-xs text-gray-400">${new Date(date + 'T00:00:00').toLocaleDateString()}</p>
+                                <div class="flex items-center mt-1 text-xs">
+                                    <i class="fas fa-heart text-accent mr-1"></i>
+                                    <span>${data.likes}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    listItem.addEventListener('click', () => {
+                        dateInput.value = date;
+                        dateForm.dispatchEvent(new Event('submit'));
+                    });
+                    likedList.appendChild(listItem);
+                });
+            };
+
+            const updateLikeButtonUI = () => {
+                if (!currentApodData) return;
+                const likedImages = getLikedImages();
+                const date = currentApodData.date;
+                const likeIcon = likeBtn.querySelector('i');
+                
+                if (likedImages[date] && likedImages[date].userLiked) {
+                    likeIcon.classList.replace('far', 'fas');
+                    likeIcon.classList.add('text-accent');
+                } else {
+                    likeIcon.classList.replace('fas', 'far');
+                    likeIcon.classList.remove('text-accent');
+                }
+            };
+
+            const renderApod = (data) => {
+                currentApodData = data;
+                apodTitle.textContent = data.title;
+                apodDateDisplay.textContent = new Date(data.date + 'T00:00:00').toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric'
+                });
+                apodExplanation.textContent = data.explanation;
+                mediaContainer.innerHTML = '';
+
+                if (data.media_type === 'image') {
+                    const img = document.createElement('img');
+                    img.src = data.hdurl || data.url;
+                    img.alt = data.title;
+                    img.className = 'w-full h-auto apod-image rounded-md';
+                    mediaContainer.appendChild(img);
+                } else if (data.media_type === 'video') {
+                    const iframe = document.createElement('iframe');
+                    iframe.src = data.url;
+                    iframe.className = 'w-full aspect-video rounded-md';
+                    iframe.allowFullscreen = true;
+                    mediaContainer.appendChild(iframe);
+                }
+                
+                updateLikeButtonUI();
+                apodContainer.classList.remove('hidden');
+            };
+
+            // --- Event Handlers ---
+            const handleLikeClick = () => {
+                if (!currentApodData) return;
+                const { date, title, media_type, url, hdurl } = currentApodData;
+                
+                const thumbnail = media_type === 'image' ? (hdurl || url) : 'https://placehold.co/100x100/0a0a1f/38bdf8?text=Video';
+                
+                const likedImages = getLikedImages();
+                
+                if (!likedImages[date]) {
+                    likedImages[date] = { title, thumbnail, likes: 0, userLiked: false };
+                }
+
+                const entry = likedImages[date];
+                if (entry.userLiked) {
+                    entry.likes--;
+                    entry.userLiked = false;
+                } else {
+                    entry.likes++;
+                    entry.userLiked = true;
+                    const likeIcon = likeBtn.querySelector('i');
+                    likeIcon.classList.add('like-pulse');
+                    setTimeout(() => likeIcon.classList.remove('like-pulse'), 500);
+                }
+
+                saveLikedImages(likedImages);
+                updateLikeButtonUI();
+                updateLikedList();
+            };
+
+            const handleFormSubmit = async (e) => {
+                e.preventDefault();
+                const date = dateInput.value;
+                if (!date) return;
+
+                showLoading(true);
+                try {
+                    const response = await fetch(`https://api.nasa.gov/planetary/apod?date=${date}&api_key=${API_KEY}`);
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.msg || `API error: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    renderApod(data);
+                } catch (error) {
+                    console.error('Error fetching APOD:', error);
+                    showError(error.message);
+                } finally {
+                    showLoading(false);
+                }
+            };
+            
+            // --- Initialization ---
+            const init = () => {
+                // Set max date to today
+                const today = new Date().toISOString().split('T')[0];
+                dateInput.max = today;
+                dateInput.value = today;
+                
+                // Generate starry background
+                const starsContainer = document.getElementById('stars');
+                for (let i = 0; i < 150; i++) {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    const size = Math.random() * 2.5;
+                    star.style.width = `${size}px`;
+                    star.style.height = `${size}px`;
+                    star.style.left = `${Math.random() * 100}%`;
+                    star.style.top = `${Math.random() * 100}%`;
+                    star.style.animationDelay = `${Math.random() * 5}s`;
+                    starsContainer.appendChild(star);
+                }
+                
+                // Add event listeners
+                dateForm.addEventListener('submit', handleFormSubmit);
+                likeBtn.addEventListener('click', handleLikeClick);
+                
+                // Initial load
+                updateLikedList();
+                dateForm.dispatchEvent(new Event('submit'));
+            };
+
+            init();
+        });
+    </script>
+</body>
+</html>
